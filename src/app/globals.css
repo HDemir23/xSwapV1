@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #08080A;
+  --bg-secondary: #0E0E12;
+  --bg-card: #13131A;
+  --bg-card-hover: #1A1A24;
+  --text-primary: #FEFEFE;
+  --text-secondary: #B8B8C8;
+  --text-tertiary: #6A6A7A;
+  --border: rgba(255, 183, 197, 0.08);
+  --border-strong: rgba(255, 183, 197, 0.18);
+  --accent: #FFB7C5;
+  --accent-glow: rgba(255, 183, 197, 0.4);
+  --accent-secondary: #C9A86C;
+  --gradient: linear-gradient(135deg, #FFB7C5 0%, #E8D5B7 50%, #C9A86C 100%);
+  --leaf-color-0: rgba(255, 183, 197, 0.7);
+  --leaf-color-1: rgba(255, 200, 212, 0.6);
+  --leaf-color-2: rgba(232, 213, 183, 0.5);
+
+  --success: #4ADE80;
+  --warning: #FACC15;
+  --error: #F87171;
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── RainbowKit overrides ─────────────────────────────────────────────────── */
+[data-rk] {
+  --rk-colors-accentColor: var(--accent) !important;
+  --rk-colors-accentColorForeground: var(--bg-primary) !important;
+  --rk-colors-actionButtonBorder: var(--border-strong) !important;
+  --rk-colors-connectButtonBackground: transparent !important;
+  --rk-colors-connectButtonInnerBackground: transparent !important;
+  --rk-colors-connectButtonText: var(--text-primary) !important;
+  --rk-colors-connectionIndicator: var(--success) !important;
+  --rk-colors-error: var(--error) !important;
+  --rk-colors-generalBorder: var(--border-strong) !important;
+  --rk-colors-generalBorderDim: var(--border) !important;
+  --rk-colors-menuItemBackground: var(--bg-card) !important;
+  --rk-colors-modalBackdrop: rgba(0,0,0,0.85) !important;
+  --rk-colors-modalBackground: var(--bg-primary) !important;
+  --rk-colors-modalBorder: var(--border-strong) !important;
+  --rk-colors-modalText: var(--text-primary) !important;
+  --rk-colors-modalTextDim: var(--text-tertiary) !important;
+  --rk-colors-modalTextSecondary: var(--text-secondary) !important;
+  --rk-radii-actionButton: 6px !important;
+  --rk-radii-connectButton: 6px !important;
+  --rk-radii-modal: 12px !important;
+}
+
+[data-rk] button[data-testid="rk-connect-button"] {
+  background: transparent !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 6px !important;
+  padding: 10px 20px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  color: var(--text-primary) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+}
+[data-rk] button[data-testid="rk-connect-button"]:hover {
+  background: var(--bg-card) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 20px var(--accent-glow) !important;
+}
+
+[data-rk] button[data-testid="rk-account-button"] {
+  background: transparent !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-primary) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+}
+[data-rk] button[data-testid="rk-account-button"]:hover {
+  background: var(--bg-card) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 20px var(--accent-glow) !important;
+}
+
+/* ── Sakura animations ────────────────────────────────────────────────────── */
+@keyframes sakura-fall-1 {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(110vh) translateX(60px) rotate(360deg); opacity: 0; }
+}
+@keyframes sakura-fall-2 {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(0deg) scale(1); opacity: 0; }
+  10%  { opacity: 0.7; }
+  50%  { transform: translateY(50vh) translateX(-30px) rotate(180deg) scale(0.9); }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(110vh) translateX(-50px) rotate(500deg) scale(0.75); opacity: 0; }
+}
+@keyframes sakura-fall-3 {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(45deg); opacity: 0; }
+  15%  { opacity: 0.75; }
+  25%  { transform: translateY(25vh) translateX(20px) rotate(100deg); }
+  50%  { transform: translateY(55vh) translateX(-12px) rotate(200deg); }
+  75%  { transform: translateY(80vh) translateX(10px) rotate(300deg); }
+  90%  { opacity: 0.35; }
+  100% { transform: translateY(110vh) translateX(25px) rotate(400deg); opacity: 0; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--accent-glow), 0 0 40px transparent; }
+  50%       { box-shadow: 0 0 30px var(--accent-glow), 0 0 60px var(--accent-glow); }
+}
+
+.sakura-leaf {
+  will-change: transform, opacity;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+}
+
+.animate-fade-up  { animation: fade-up 1s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sakura-leaf { animation: none !important; opacity: 0 !important; }
+  .animate-fade-up { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
