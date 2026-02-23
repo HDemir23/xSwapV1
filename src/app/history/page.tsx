@@ -1,16 +1,16 @@
 "use client";
 
 import { Header } from "@/components/Header";
-import { SwapBox } from "@/components/SwapBox";
+import { HistoryBox } from "@/components/HistoryBox";
 import { SakuraLeaves } from "@/components/SakuraLeaves";
 
-export default function Home() {
+export default function HistoryPage() {
   return (
     <div className="page-container">
       <SakuraLeaves />
-      <Header activePage="swap" />
-      <main className="main-centered">
-        <SwapBox />
+      <Header activePage="history" />
+      <main className="main-history">
+        <HistoryBox />
       </main>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 
 const LEAF_PATHS = [
   "M12 1C13.5 5 17 7.5 17 12C17 16.5 13.5 20.5 12 23C10.5 20.5 7 16.5 7 12C7 7.5 10.5 5 12 1Z",
@@ -31,21 +31,12 @@ const LEAF_CONFIGS = [
   { left: 98, delay: 22, duration: 24, size: 14, path: 1, colorIdx: 1 },
 ];
 
-export function SakuraLeaves() {
+export const SakuraLeaves = memo(function SakuraLeaves() {
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  return (
-    <div
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0"
-      aria-hidden="true"
-    >
-      {LEAF_CONFIGS.map((leaf, i) => (
+  const leaves = useMemo(
+    () =>
+      LEAF_CONFIGS.map((leaf, i) => (
         <svg
           key={`leaf-${i}-${leaf.left}`}
           className="sakura-leaf absolute"
@@ -65,7 +56,22 @@ export function SakuraLeaves() {
             fill={`var(--leaf-color-${leaf.colorIdx})`}
           />
         </svg>
-      ))}
+      )),
+    [],
+  );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0"
+      aria-hidden="true"
+    >
+      {leaves}
     </div>
   );
-}
+});

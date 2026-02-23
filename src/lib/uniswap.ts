@@ -4,10 +4,10 @@ import {
   encodeFunctionData,
   type Address,
 } from "viem";
-import { config, activeChain } from "./chains";
+import { getChain, getViemChain } from "./chains";
 
 // ─── ABIs ─────────────────────────────────────────────────────────────────────
-const FACTORY_ABI = [
+export const FACTORY_ABI = [
   {
     name: "getPool",
     type: "function",
@@ -126,10 +126,11 @@ export const ERC20_ABI = [
 ] as const;
 
 // ─── Shared RPC client ────────────────────────────────────────────────────────
-export function getRpcClient() {
+export function getRpcClient(chainId?: number) {
+  const chain = getChain(chainId);
   return createPublicClient({
-    chain: activeChain,
-    transport: http(config.rpc),
+    chain: getViemChain(chainId),
+    transport: http(chain.rpc),
   });
 }
 
@@ -139,6 +140,7 @@ export interface QuoteParams {
   tokenOut: Address;
   amountIn: bigint;
   feeTier: number;
+  chainId?: number;
 }
 
 export interface QuoteResult {
@@ -152,13 +154,14 @@ export interface QuoteResult {
 }
 
 export async function getQuote(params: QuoteParams): Promise<QuoteResult> {
-  const { tokenIn, tokenOut, amountIn, feeTier } = params;
-  const client = getRpcClient();
+  const { tokenIn, tokenOut, amountIn, feeTier, chainId } = params;
+  const chain = getChain(chainId);
+  const client = getRpcClient(chainId);
 
-  if (config.uv3Quoter) {
+  if (chain.quoter) {
     try {
       const result = await client.simulateContract({
-        address: config.uv3Quoter as Address,
+        address: chain.quoter as Address,
         abi: QUOTER_V2_ABI,
         functionName: "quoteExactInputSingle",
         args: [
@@ -195,7 +198,7 @@ export async function getQuote(params: QuoteParams): Promise<QuoteResult> {
 
   // slot0 fallback: read sqrtPriceX96 directly from the pool and compute price off-chain
   const poolAddress = await client.readContract({
-    address: config.uv3Factory as Address,
+    address: chain.factory as Address,
     abi: FACTORY_ABI,
     functionName: "getPool",
     args: [tokenIn, tokenOut, feeTier],
@@ -253,6 +256,7 @@ export interface SwapCalldataParams {
   recipient: Address;
   amountOutMinimum: bigint;
   payToAddress: Address;
+  chainId?: number;
 }
 
 export interface SwapCalldata {
@@ -291,14 +295,17 @@ export function buildSwapCalldata(params: SwapCalldataParams): SwapCalldata {
     recipient,
     amountOutMinimum,
     payToAddress,
+    chainId,
   } = params;
+
+  const chain = getChain(chainId);
 
   // 0.5% commission split
   const feeBps = 50n; // 0.5% = 50 bps
   const feeAmount = (amountIn * feeBps) / 10000n;
   const swapAmount = amountIn - feeAmount;
 
-  const router = config.uv3Router as Address;
+  const router = chain.router as Address;
 
   // approve_tx: tokenIn.approve(router, swapAmount)
   const approveData = encodeFunctionData({

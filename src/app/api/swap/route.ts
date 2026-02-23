@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAddress, type Address } from "viem";
 import { getQuote, buildSwapCalldata } from "@/lib/uniswap";
-import { config } from "@/lib/chains";
+import { getChain, isChainSupported } from "@/lib/chains";
 
 // POST /api/swap
 // Body: {
@@ -11,6 +11,7 @@ import { config } from "@/lib/chains";
 //   feeTier?: number,       // default 3000
 //   recipient: string,
 //   slippageBps?: number,   // default 100 (1%)
+//   chainId?: number,       // default: DEFAULT_CHAIN_ID
 // }
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
@@ -27,7 +28,17 @@ export async function POST(req: NextRequest) {
     feeTier: feeTierRaw,
     recipient: recipientRaw,
     slippageBps: slippageBpsRaw,
+    chainId: chainIdRaw,
   } = body;
+
+  // Validate chainId
+  const chainId = chainIdRaw !== undefined ? Number(chainIdRaw) : undefined;
+  if (chainId !== undefined && !isChainSupported(chainId)) {
+    return NextResponse.json(
+      { error: `Unsupported chainId: ${chainId}` },
+      { status: 400 }
+    );
+  }
 
   // Validate
   if (!tokenIn || typeof tokenIn !== "string" || !isAddress(tokenIn)) {
@@ -76,6 +87,7 @@ export async function POST(req: NextRequest) {
   }
 
   const slippageBps = Number(slippageBpsRaw ?? 100); // default 1%
+  const chain = getChain(chainId);
 
   // Get quote for amountOutMinimum (after commission, swap uses 99.5%)
   const feeBps = 50n;
@@ -89,6 +101,7 @@ export async function POST(req: NextRequest) {
       tokenOut: tokenOut as Address,
       amountIn: swapAmount,
       feeTier,
+      chainId,
     });
     if (quote.quoterUsed && quote.amountOut > 0n) {
       // Apply slippage tolerance
@@ -108,6 +121,7 @@ export async function POST(req: NextRequest) {
     recipient: recipientRaw as Address,
     amountOutMinimum,
     payToAddress: payToAddress as Address,
+    chainId,
   });
 
   return NextResponse.json({
@@ -118,8 +132,9 @@ export async function POST(req: NextRequest) {
     recipient: recipientRaw,
     slippageBps,
     amountOutMinimum: amountOutMinimum.toString(),
-    network: config.network,
-    router: config.uv3Router,
+    chainId: chain.chainId,
+    network: chain.name.toLowerCase(),
+    router: chain.router,
     calldata,
     execution_order: [
       "1. Execute approve_tx — approve router to spend swapAmount",

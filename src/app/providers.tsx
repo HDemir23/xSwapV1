@@ -3,14 +3,14 @@
 import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { monadTestnet, monadMainnet } from "@/lib/chains";
+import { allViemChains, monadTestnet } from "@/lib/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 
 const config = getDefaultConfig({
   appName: "xclaw-swap",
   projectId:
     process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "placeholder",
-  chains: [monadTestnet, monadMainnet],
+  chains: [...allViemChains, monadTestnet],
   ssr: true,
 });
 

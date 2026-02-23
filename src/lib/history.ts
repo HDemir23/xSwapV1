@@ -1,16 +1,7 @@
 import { createPublicClient, http, parseAbiItem, type Address } from "viem";
-import { config, activeChain } from "./chains";
+import { getChain, getViemChain } from "./chains";
 
 // Uniswap V3 Pool Swap event
-// event Swap(
-//   address indexed sender,
-//   address indexed recipient,
-//   int256 amount0,
-//   int256 amount1,
-//   uint160 sqrtPriceX96,
-//   uint128 liquidity,
-//   int24 tick
-// )
 const SWAP_EVENT = parseAbiItem(
   "event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)"
 );
@@ -25,20 +16,23 @@ export interface SwapHistoryItem {
   amount1: string;
   sqrtPriceX96: string;
   network: string;
+  chainId: number;
 }
 
 export async function getWalletSwapHistory(
   address: Address,
-  limit: number = 20
+  limit: number = 20,
+  chainId?: number,
 ): Promise<SwapHistoryItem[]> {
+  const chain = getChain(chainId);
   const client = createPublicClient({
-    chain: activeChain,
-    transport: http(config.rpc),
+    chain: getViemChain(chainId),
+    transport: http(chain.rpc),
   });
 
   // Get latest block
   const latestBlock = await client.getBlockNumber();
-  // Look back ~10k blocks (~10 minutes on Monad)
+  // Look back ~10k blocks
   const fromBlock = latestBlock > 10000n ? latestBlock - 10000n : 0n;
 
   // Fetch Swap events where recipient = address (wallet received tokens)
@@ -83,6 +77,7 @@ export async function getWalletSwapHistory(
     amount0: String(log.args.amount0 ?? 0n),
     amount1: String(log.args.amount1 ?? 0n),
     sqrtPriceX96: String(log.args.sqrtPriceX96 ?? 0n),
-    network: config.network,
+    network: chain.name.toLowerCase(),
+    chainId: chain.chainId,
   }));
 }

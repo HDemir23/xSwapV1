@@ -1,16 +1,16 @@
 "use client";
 
 import { Header } from "@/components/Header";
-import { SwapBox } from "@/components/SwapBox";
+import { BridgeBox } from "@/components/BridgeBox";
 import { SakuraLeaves } from "@/components/SakuraLeaves";
 
-export default function Home() {
+export default function BridgePage() {
   return (
     <div className="page-container">
       <SakuraLeaves />
-      <Header activePage="swap" />
+      <Header activePage="bridge" />
       <main className="main-centered">
-        <SwapBox />
+        <BridgeBox />
       </main>
     </div>
   );
