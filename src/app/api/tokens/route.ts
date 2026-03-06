@@ -4,11 +4,12 @@ import { getRpcClient, FACTORY_ABI } from "@/lib/uniswap";
 import { getChain, isChainSupported } from "@/lib/chains";
 
 interface TokenInfo {
-  address: string;
+  address: string;    // "native" for ETH/MON/MATIC
   symbol: string;
   name: string;
   decimals: number;
   chainId: number;
+  logoURI?: string;
 }
 
 // Per-chain in-memory cache: refresh every 5 minutes
@@ -17,8 +18,41 @@ const CACHE_TTL = 5 * 60 * 1000;
 
 const FEE_TIERS = [100, 500, 3000, 10000] as const;
 
+// ─── Native token logos ─────────────────────────────────────────────────────
+const NATIVE_LOGOS: Record<string, string> = {
+  ETH: "https://assets-cdn.trustwallet.com/blockchains/ethereum/info/logo.png",
+  MATIC: "https://assets-cdn.trustwallet.com/blockchains/polygon/info/logo.png",
+  MON: "/mon-logo.png",
+};
+
+// Trust Wallet CDN chain slug mapping
+const TW_CHAIN_SLUG: Record<number, string> = {
+  1: "ethereum",
+  42161: "arbitrum",
+  8453: "base",
+  10: "optimism",
+  137: "polygon",
+};
+
+function getTrustWalletLogoURI(chainId: number, address: string): string | undefined {
+  const slug = TW_CHAIN_SLUG[chainId];
+  if (!slug) return undefined;
+  return `https://assets-cdn.trustwallet.com/blockchains/${slug}/assets/${address}/logo.png`;
+}
+
+function buildNativeToken(chain: ReturnType<typeof getChain>): TokenInfo {
+  return {
+    address: "native",
+    symbol: chain.nativeSymbol,
+    name: chain.nativeName,
+    decimals: 18,
+    chainId: chain.chainId,
+    logoURI: NATIVE_LOGOS[chain.nativeSymbol],
+  };
+}
+
 // ─── Uniswap Token List (for EVM mainnets) ──────────────────────────────────
-let uniswapTokenList: { chainId: number; address: string; symbol: string; name: string; decimals: number }[] | null = null;
+let uniswapTokenList: { chainId: number; address: string; symbol: string; name: string; decimals: number; logoURI?: string }[] | null = null;
 let uniswapTokenListTs = 0;
 
 async function fetchUniswapTokenList() {
@@ -53,6 +87,7 @@ async function getTokensFromUniswapList(chainId: number): Promise<TokenInfo[]> {
     name: t.name,
     decimals: t.decimals,
     chainId,
+    logoURI: t.logoURI || getTrustWalletLogoURI(chainId, t.address),
   }));
 
   // Ensure native wrapped + USDC are present
@@ -65,6 +100,7 @@ async function getTokensFromUniswapList(chainId: number): Promise<TokenInfo[]> {
       name: `Wrapped ${chain.nativeName}`,
       decimals: 18,
       chainId,
+      logoURI: getTrustWalletLogoURI(chainId, chain.weth),
     });
   }
   if (!addresses.has(chain.usdc.toLowerCase())) {
@@ -74,18 +110,24 @@ async function getTokensFromUniswapList(chainId: number): Promise<TokenInfo[]> {
       name: "USD Coin",
       decimals: 6,
       chainId,
+      logoURI: getTrustWalletLogoURI(chainId, chain.usdc),
     });
   }
 
-  // Sort: wrapped native first, USDC second, rest alphabetical
+  // Sort: native first, USDC second, wrapped native third, rest alphabetical
   const nativeWrappedSymbol = chain.nativeSymbol === "ETH" ? "WETH" : `W${chain.nativeSymbol}`;
   tokens.sort((a, b) => {
-    if (a.symbol === nativeWrappedSymbol) return -1;
-    if (b.symbol === nativeWrappedSymbol) return 1;
+    if (a.address === "native") return -1;
+    if (b.address === "native") return 1;
     if (a.symbol === "USDC") return -1;
     if (b.symbol === "USDC") return 1;
+    if (a.symbol === nativeWrappedSymbol) return -1;
+    if (b.symbol === nativeWrappedSymbol) return 1;
     return a.symbol.localeCompare(b.symbol);
   });
+
+  // Prepend native token
+  tokens.unshift(buildNativeToken(chain));
 
   return tokens;
 }
@@ -179,18 +221,22 @@ async function discoverMonadTokens(chainId: number): Promise<TokenInfo[]> {
         name: name.result as string,
         decimals: dec.result as number,
         chainId,
+        logoURI: undefined, // Monad tokens don't have CDN logos yet
       });
     }
   }
 
-  // Sort: WMON first, USDC second, rest alphabetical
+  // Sort: USDC second, WMON third, rest alphabetical (native will be prepended)
   tokens.sort((a, b) => {
-    if (a.symbol === "WMON") return -1;
-    if (b.symbol === "WMON") return 1;
     if (a.symbol === "USDC") return -1;
     if (b.symbol === "USDC") return 1;
+    if (a.symbol === "WMON") return -1;
+    if (b.symbol === "WMON") return 1;
     return a.symbol.localeCompare(b.symbol);
   });
+
+  // Prepend native token
+  tokens.unshift(buildNativeToken(chain));
 
   return tokens;
 }

@@ -257,6 +257,7 @@ export interface SwapCalldataParams {
   amountOutMinimum: bigint;
   payToAddress: Address;
   chainId?: number;
+  nativeIn?: boolean;
 }
 
 export interface SwapCalldata {
@@ -296,6 +297,7 @@ export function buildSwapCalldata(params: SwapCalldataParams): SwapCalldata {
     amountOutMinimum,
     payToAddress,
     chainId,
+    nativeIn,
   } = params;
 
   const chain = getChain(chainId);
@@ -307,21 +309,8 @@ export function buildSwapCalldata(params: SwapCalldataParams): SwapCalldata {
 
   const router = chain.router as Address;
 
-  // approve_tx: tokenIn.approve(router, swapAmount)
-  const approveData = encodeFunctionData({
-    abi: ERC20_ABI,
-    functionName: "approve",
-    args: [router, swapAmount],
-  });
-
-  // fee_tx: tokenIn.transfer(payToAddress, feeAmount)
-  const feeData = encodeFunctionData({
-    abi: ERC20_ABI,
-    functionName: "transfer",
-    args: [payToAddress, feeAmount],
-  });
-
-  // swap_tx: router.exactInputSingle(...)
+  // swap_tx calldata is the same for both native and ERC20
+  // (SwapRouter02 accepts msg.value for native ETH and wraps internally)
   const swapData = encodeFunctionData({
     abi: SWAP_ROUTER_ABI,
     functionName: "exactInputSingle",
@@ -336,6 +325,52 @@ export function buildSwapCalldata(params: SwapCalldataParams): SwapCalldata {
         sqrtPriceLimitX96: 0n,
       },
     ],
+  });
+
+  if (nativeIn) {
+    // Native ETH flow:
+    // - No approve needed (router wraps ETH→WETH internally via msg.value)
+    // - Fee is a plain ETH transfer (not ERC20)
+    // - Swap sends ETH as msg.value
+    return {
+      approve_tx: {
+        to: payToAddress, // unused — won't be in execution_order
+        data: "0x" as `0x${string}`,
+        value: "0",
+        description: "No approval needed for native ETH",
+      },
+      fee_tx: {
+        to: payToAddress,
+        data: "0x" as `0x${string}`,
+        value: feeAmount.toString(),
+        description: `Send ${feeAmount.toString()} wei (0.5% commission) to ${payToAddress}`,
+      },
+      swap_tx: {
+        to: router,
+        data: swapData,
+        value: swapAmount.toString(),
+        description: `Uniswap V3 exactInputSingle — swap ${swapAmount.toString()} wei native ETH → ${tokenOut}`,
+      },
+      commission: {
+        bps: 50,
+        feeAmount: feeAmount.toString(),
+        swapAmount: swapAmount.toString(),
+        payTo: payToAddress,
+      },
+    };
+  }
+
+  // ERC20 flow: approve + ERC20 transfer fee + swap
+  const approveData = encodeFunctionData({
+    abi: ERC20_ABI,
+    functionName: "approve",
+    args: [router, swapAmount],
+  });
+
+  const feeData = encodeFunctionData({
+    abi: ERC20_ABI,
+    functionName: "transfer",
+    args: [payToAddress, feeAmount],
   });
 
   return {

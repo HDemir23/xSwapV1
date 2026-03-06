@@ -29,7 +29,10 @@ export async function POST(req: NextRequest) {
     recipient: recipientRaw,
     slippageBps: slippageBpsRaw,
     chainId: chainIdRaw,
+    isNativeIn: isNativeInRaw,
   } = body;
+
+  const isNativeIn = Boolean(isNativeInRaw);
 
   // Validate chainId
   const chainId = chainIdRaw !== undefined ? Number(chainIdRaw) : undefined;
@@ -122,7 +125,13 @@ export async function POST(req: NextRequest) {
     amountOutMinimum,
     payToAddress: payToAddress as Address,
     chainId,
+    nativeIn: isNativeIn,
   });
+
+  // Native ETH: skip approve (router wraps ETH internally via msg.value)
+  const execution_order = isNativeIn
+    ? ["fee_tx", "swap_tx"]
+    : ["approve_tx", "fee_tx", "swap_tx"];
 
   return NextResponse.json({
     tokenIn,
@@ -136,10 +145,6 @@ export async function POST(req: NextRequest) {
     network: chain.name.toLowerCase(),
     router: chain.router,
     calldata,
-    execution_order: [
-      "1. Execute approve_tx — approve router to spend swapAmount",
-      "2. Execute fee_tx — transfer 0.5% commission to xclaw-swap",
-      "3. Execute swap_tx — router performs the Uniswap V3 swap",
-    ],
+    execution_order,
   });
 }

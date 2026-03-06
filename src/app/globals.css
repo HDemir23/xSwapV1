@@ -400,6 +400,60 @@ a {
   cursor: pointer;
 }
 
+/* ── Token Selector Button ────────────────────────────────────────────────── */
+.token-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 6px 12px 6px 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.token-selector-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+.token-selector-symbol {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.token-selector-chevron {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+/* ── Token Logo ───────────────────────────────────────────────────────────── */
+.token-logo-img {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.token-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
 .token-badge {
   background: var(--bg-card);
   border: 1px solid var(--border-strong);
@@ -430,6 +484,47 @@ a {
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
+}
+
+/* ── Balance Bar ──────────────────────────────────────────────────────────── */
+.balance-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  gap: 8px;
+}
+
+.balance-text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.percent-buttons {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.percent-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.percent-btn:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
 /* ── Flip Button ──────────────────────────────────────────────────────────── */
@@ -554,6 +649,98 @@ a {
   color: var(--error);
   font-size: 13px;
   margin-top: 12px;
+}
+
+/* ── Execution Steps ─────────────────────────────────────────────────────── */
+.execution-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.execution-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.execution-step-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+}
+
+.execution-step--signing .execution-step-icon {
+  background: rgba(255, 183, 197, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+.execution-step--confirming .execution-step-icon {
+  background: rgba(250, 204, 21, 0.15);
+  border-color: var(--warning);
+  color: var(--warning);
+  animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+.execution-step--done .execution-step-icon {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.execution-step--error .execution-step-icon {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+@keyframes pulse-icon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.execution-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.execution-step-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.execution-step--done .execution-step-label {
+  color: var(--success);
+}
+
+.execution-step--error .execution-step-label {
+  color: var(--error);
+}
+
+.execution-step-tx {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.execution-step-tx:hover {
+  text-decoration: underline;
 }
 
 /* ── History ──────────────────────────────────────────────────────────────── */
@@ -880,6 +1067,175 @@ a {
   border-radius: 4px;
   color: var(--accent);
   font-size: 12px;
+}
+
+/* ── Token Modal ──────────────────────────────────────────────────────────── */
+.token-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.token-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-in 0.15s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.token-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.token-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--text-tertiary);
+  padding: 0 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.token-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.token-modal-search {
+  padding: 0 20px 12px;
+}
+
+.token-modal-search input {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.token-modal-search input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.token-modal-search input:focus {
+  border-color: var(--accent);
+}
+
+.token-modal-popular {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+
+.popular-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px 6px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.popular-chip:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+
+.token-modal-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 20px;
+}
+
+.token-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.token-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.1s ease;
+  text-align: left;
+}
+
+.token-row:hover {
+  background: var(--bg-card-hover);
+}
+
+.token-row-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.token-row-symbol {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.token-row-name {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-row-balance {
+  font-size: 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.token-modal-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-tertiary);
+  font-size: 14px;
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
